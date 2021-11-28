@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { Link, Redirect } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 import {
   Col,
@@ -40,7 +40,7 @@ export default function RegisterPage() {
     setUser({ ...user, [e.target.id]: e.target.value });
   };
 
-  if (isAuthenticated) return <Redirect to="/" />;
+  if (isAuthenticated) return <Navigate to="/" />;
 
   return (
     <div>
