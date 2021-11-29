@@ -23,7 +23,7 @@ export default function RegisterPage() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
-  const [user, setUser] = useState({ email: "", password: "" });
+  const [user, setUser] = useState({ firstName: "", surname: "", email: "", password: "", dob: "", gender: "" });
   const [show, setShow] = useState(false);
 
   const onToggleModal = (e) => {
@@ -39,6 +39,29 @@ export default function RegisterPage() {
   const onChange = (e) => {
     setUser({ ...user, [e.target.id]: e.target.value });
   };
+
+  const handleOnChange = (e) => {
+    setUser({ ...user, [e.target.name]: e.target.value });
+  };
+
+  const handleGender = (e) => {
+    setUser({ ...user, gender: e.target.value })
+  }
+
+  const handleDOB = (e) => {
+    setUser({...user, dob: e.target.value})
+  }
+
+  const handleLoginGoogle = (e) => {
+    e.preventDefault();
+    dispatch(authActions.loginGoogleRequest())
+  }
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    console.log("user info", user)
+    dispatch(authActions.register(user.firstName, user.surname, user.email, user.password, user.dob, user.gender));
+  }
 
   if (isAuthenticated) return <Navigate to="/" />;
 
@@ -125,22 +148,74 @@ export default function RegisterPage() {
         </Modal.Header>
         <Modal.Body>
           {/* STEP 1 */}
-          <Form className="d-flex flex-column justify-content-center">
+          <Form className="d-flex flex-column justify-content-center" onSubmit={handleRegister}>
+            <Form.Row>
+               <Form.Group as={Col} controlId="firstname">
+                <Form.Control
+                  type="name"
+                  placeholder="First name"
+                  name="firstName"
+                  onChange={handleOnChange}
+                />
+              </Form.Group>
+               <Form.Group as={Col} controlId="surname">
+                <Form.Control
+                  type="name"
+                  placeholder="Surname"
+                  name="surname"
+                  onChange={handleOnChange}
+                />
+              </Form.Group>
+            </Form.Row>
             <Form.Row>
               <Form.Group as={Col} controlId="email">
-                <Form.Label>Email</Form.Label>
                 <Form.Control
                   type="email"
                   placeholder="Enter email"
+                  name="email"
+                  onChange={handleOnChange}
                 />
               </Form.Group>
+            </Form.Row>
+            <Form.Row>
               <Form.Group as={Col} controlId="password">
-                <Form.Label>Password</Form.Label>
                 <Form.Control
                   type="password"
-                  placeholder="Password"
+                  placeholder="Enter password"
+                  name="password"
+                  onChange={handleOnChange}
                 />
               </Form.Group>
+            </Form.Row>
+            <Form.Row>
+              <Form.Group as={Col} className="mb-3">
+                <Form.Label>Date of Birth</Form.Label>
+                <Form.Control type="date" name="dob" controlId="dob" placeholder="Date of Birth" onClick={handleDOB}/>
+              </Form.Group>
+            </Form.Row>
+            <Form.Row>
+              <Form.Group as={Col} className="mb-3">
+                <Form.Label>Gender</Form.Label>
+                <Row sm={10} style={{ marginLeft: "5px" }}>
+                  <Form.Check
+                    type="radio"
+                    label="Male"
+                    name="gender"
+                    id="gender"
+                    value="male"
+                    onClick={handleGender}
+                  />
+                  <Form.Check
+                    type="radio"
+                    label="Female"
+                    name="gender"
+                    id="gender"
+                    value="female"
+                    onClick={handleGender}
+                    style={{ marginLeft: "10px" }}
+                  />
+                </Row>
+              </Form.Group>  
             </Form.Row>
             <p className="text-center p-terms">
               By clicking Sign Up, you agree to our Terms, Data Policy and
@@ -151,7 +226,19 @@ export default function RegisterPage() {
               Sign Up
             </Button>
           </Form>
+          {/* <hr> </hr> */}
         </Modal.Body>
+        <Modal.Footer style={{ display: 'flex',flexDirection: "column", justifyContent: 'center' }}>
+          <Modal.Title>
+            <p className="text-secondary font-weight-light p-modal">Or</p>
+          </Modal.Title>
+          <Button variant="light" className="mx-auto w-50" onClick={handleLoginGoogle}>
+            Continue with Google
+          </Button>
+          <Button variant="primary" className="mx-auto w-50">
+            Continue with Facebook
+          </Button>
+        </Modal.Footer>
       </Modal>
       <Footer />
     </div>

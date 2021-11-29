@@ -1,14 +1,15 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const session = require("express-session");
 
 require("dotenv").config();
 const cors = require("cors");
 const mongoose = require("mongoose");
 const MONGODB_URI = process.env.MONGODB_URI;
 
-var app = express();
+const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -16,6 +17,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
+
+app.use(
+  session({
+    secret: "secret",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+const passport = require("passport");
+app.use(passport.initialize());
+app.use(passport.session());
+require("./helpers/passport.helper");
 
 mongoose
   .connect(MONGODB_URI, {
@@ -32,7 +45,7 @@ mongoose
   });
 
 /* Initialize Routes */
-var indexRouter = require("./api/index");
+const indexRouter = require("./api/index");
 app.use("/api", indexRouter);
 
 // catch 404 and forard to error handler

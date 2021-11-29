@@ -5,10 +5,7 @@ const initialState = {
   loading: false,
   isAuthenticated,
   accessToken: localStorage.getItem("accessToken"),
-  user: {
-    firstName: "Loi",
-    lastName: "Tran",
-  },
+  user: {},
 };
 
 const authReducer = (state = initialState, action) => {
@@ -48,8 +45,7 @@ const authReducer = (state = initialState, action) => {
     case types.VERIFY_EMAIL_FAILURE:
     case types.LOGIN_FACEBOOK_FAILURE:
     case types.GET_CURRENT_USER_FAILURE:
-      return { ...state, loading: false, isAuthenticated: false };
-
+      return { ...state, loading: false, isAuthenticated: false, user: { ...state.user, payload } };
     case types.UPDATE_PROFILE_SUCCESS:
       return { ...state, loading: false, user: { ...state.user, payload } };
 

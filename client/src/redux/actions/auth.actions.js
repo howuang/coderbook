@@ -6,7 +6,7 @@ const loginRequest = (email, password) => async (dispatch) => {
   dispatch({ type: types.LOGIN_REQUEST, payload: null });
   try {
     const res = await api.post("/auth/login", { email, password });
-    const name = res.data.data.user.name;
+    const name = res.data.data.user.firstName;
     dispatch({ type: types.LOGIN_SUCCESS, payload: res.data.data });
     toast.success(`Welcome ${name}`);
     api.defaults.headers.common["authorization"] =
@@ -45,12 +45,12 @@ const loginGoogleRequest = (access_token) => async (dispatch) => {
     dispatch({ type: types.LOGIN_GOOGLE_FAILURE, payload: error });
   }
 };
-const register = (name, email, password, avatarUrl) => async (dispatch) => {
+const register = (firstName, surname, email, password, avatarUrl, dob, gender) => async (dispatch) => {
   dispatch({ type: types.REGISTER_REQUEST, payload: null });
   try {
-    const res = await api.post("/users", { name, email, password, avatarUrl });
+    const res = await api.post("/users", { firstName, surname, email, password, avatarUrl, dob, gender });
     dispatch({ type: types.REGISTER_SUCCESS, payload: res.data.data });
-    toast.success(`Thank you for your registration, ${name}!`);
+    toast.success(`Thank you for your registration, ${firstName} ${surname}!`);
   } catch (error) {
     dispatch({ type: types.REGISTER_FAILURE, payload: error });
   }
@@ -81,14 +81,11 @@ const updateProfile = (name, avatarUrl) => async (dispatch) => {
   }
 };
 
-const getCurrentUser = (accessToken) => async (dispatch) => {
+const getCurrentUser = () => async (dispatch) => {
   dispatch({ type: types.GET_CURRENT_USER_REQUEST, payload: null });
-  if (accessToken) {
-    const bearerToken = "Bearer " + accessToken;
-    api.defaults.headers.common["authorization"] = bearerToken;
-  }
   try {
     const res = await api.get("/users/me");
+    console.log("current user", res.data.data)
     dispatch({ type: types.GET_CURRENT_USER_SUCCESS, payload: res.data.data });
   } catch (error) {
     dispatch({ type: types.GET_CURRENT_USER_FAILURE, payload: error });

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
@@ -17,12 +17,22 @@ import logo from "../../assets/site-identity.png";
 import { authActions } from "../../redux/actions";
 
 const PublicNavbar = () => {
+  const [currentUser, setCurrentUser] = useState({});
   const dispatch = useDispatch();
-  const { loading, isAuthenticated } = useSelector((state) => state.auth);
+  const { loading, isAuthenticated, accessToken } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
     dispatch(authActions.logout());
   };
+
+  const user = useSelector(state => state.user.user);
+  console.log("user", user)
+
+  console.log("current user", currentUser)
+
+  useEffect(() => {
+    dispatch(authActions.getCurrentUser(currentUser));
+  }, [currentUser]);
 
   const authLinks = (
     <Nav>

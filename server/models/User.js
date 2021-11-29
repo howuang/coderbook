@@ -6,9 +6,12 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 const userSchema = Schema(
   {
-    name: { type: String, required: false, unique: false, default: "" },
+    firstName: { type: String, required: false, unique: false, default: "" },
+    surname: { type: String, required: false, unique: false, default: "" },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: false, unique: false },
+    dob: { type: String, required: false, unique: false },
+    gender: { type: String, enum: ["male", "female"], default: "male" },
     avatarUrl: { type: String, required: false, default: "" },
     googleId: { type: String, required: false, default: "" },
     facebookId: { type: String, required: false, default: "" },
