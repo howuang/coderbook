@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
 import { Link, Navigate } from "react-router-dom";
+import GoogleLogin from 'react-google-login';
+import FacebookLogin from 'react-facebook-login';
 
 import {
   Col,
@@ -52,10 +54,21 @@ export default function RegisterPage() {
     setUser({...user, dob: e.target.value})
   }
 
-  const handleLoginGoogle = (e) => {
-    e.preventDefault();
-    dispatch(authActions.loginGoogleRequest())
-  }
+  // const handleLoginGoogle = (e) => {
+  //   e.preventDefault();
+  //   dispatch(authActions.loginGoogleRequest())
+  // }
+
+  const responseGoogle = (response) => {
+    console.log(response);
+    dispatch(authActions.loginGoogleRequest(response.tokenId))
+  };
+  
+  const responseFacebook = (response) => {
+    
+    console.log(response);
+    dispatch(authActions.loginFacebookRequest(response.id, response.accessToken))
+  };
 
   const handleRegister = (e) => {
     e.preventDefault();
@@ -117,7 +130,6 @@ export default function RegisterPage() {
                     Forgot Password?
                   </Link>
                 </Form.Group>
-                <hr className="hr" />
                 <Button
                   type="submit"
                   variant="success"
@@ -126,6 +138,19 @@ export default function RegisterPage() {
                 >
                   Create an account
                 </Button>
+                <hr className="hr" />
+                <GoogleLogin
+                  clientId={`${process.env.REACT_APP_GOOGLE_CLIENT_ID}`}                
+                  buttonText="Login With Google"             
+                  onSuccess={responseGoogle}              
+                  onFailure={responseGoogle}                
+                  cookiePolicy={'single_host_origin'}               
+                />        
+                <FacebookLogin               
+                  appId={`${process.env.REACT_APP_FACEBOOK_APP_ID}`}               
+                  autoLoad={true}                
+                  fields="name,email,picture"                
+                  callback={responseFacebook} />
               </Form>
             </Card>
           </Col>
@@ -226,19 +251,7 @@ export default function RegisterPage() {
               Sign Up
             </Button>
           </Form>
-          {/* <hr> </hr> */}
         </Modal.Body>
-        <Modal.Footer style={{ display: 'flex',flexDirection: "column", justifyContent: 'center' }}>
-          <Modal.Title>
-            <p className="text-secondary font-weight-light p-modal">Or</p>
-          </Modal.Title>
-          <Button variant="light" className="mx-auto w-50" onClick={handleLoginGoogle}>
-            Continue with Google
-          </Button>
-          <Button variant="primary" className="mx-auto w-50">
-            Continue with Facebook
-          </Button>
-        </Modal.Footer>
       </Modal>
       <Footer />
     </div>

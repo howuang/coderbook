@@ -64,25 +64,42 @@ userController.createWithGoogle = catchAsync(async (req, res, next) => {
   );
 })
 
-userController.read = async (req, res) => {
-  const user = await User.findOne({ _id: req.params.id });
+userController.readUser = async (req, res) => {
+  const {displayName} = req.params
+
+  const user = await User.findOne({ displayName }).lean();
   if (!user) {
     res.status(404).json({ message: "User not Found" });
   } else {
-    res.json(user);
+    return sendResponse(
+    res,
+    200,
+    true,
+    user,
+    null,
+    "Get Single User"
+  );
   }
 };
 
-
-
 userController.getCurrentUser = catchAsync(async (req, res, next) => {
-  let user = await User.findById(req.userId._id)
+  const userId = req.userId;
+  console.log("user id", userId);
+  console.log("userId", userId)
+  const user = await User.findById(userId).lean()
+  console.log("user", user)
   if (!user) {
     res.status(404).json({ message: "User not Found" });
   } else {
-    res.json(user);
+    return sendResponse(
+    res,
+    200,
+    true,
+    user,
+    null,
+    "Get Single User"
+  );
   }
-  
 })
 
 userController.update = async (req, res) => {

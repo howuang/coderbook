@@ -16,8 +16,11 @@ import "./style.css";
 import logo from "../../assets/site-identity.png";
 import { authActions } from "../../redux/actions";
 
+const Avatar = ( user ) => {
+  return <img alt="profile" className="rounded-circle" src={user.url} style={{height: "30px", width: "auto"}}/>;
+};
+
 const PublicNavbar = () => {
-  const [currentUser, setCurrentUser] = useState({});
   const dispatch = useDispatch();
   const { loading, isAuthenticated, accessToken } = useSelector((state) => state.auth);
 
@@ -25,20 +28,18 @@ const PublicNavbar = () => {
     dispatch(authActions.logout());
   };
 
-  const user = useSelector(state => state.user.user);
-  console.log("user", user)
-
-  console.log("current user", currentUser)
+  const user = useSelector(state => state.auth.user);
 
   useEffect(() => {
-    dispatch(authActions.getCurrentUser(currentUser));
-  }, [currentUser]);
+    dispatch(authActions.getCurrentUser());
+  }, []);
 
   const authLinks = (
     <Nav>
-      <Nav.Link href="/PrimeTimeTran">
-        <div className="nav-icon">
-          <FontAwesomeIcon icon="user" size="lg" />
+      <Nav.Link href={`/${user?.displayName}`}>
+        <div className="nav-icon" style={{height: "50px", width: "50px"}}>
+          <Avatar url={user.avatarUrl} />
+          {/* <FontAwesomeIcon icon={user.avatarURL} size="lg" /> */}
         </div>
       </Nav.Link>
       <Nav.Link href="#create">
@@ -65,7 +66,7 @@ const PublicNavbar = () => {
           </div>
         }
       >
-        <NavDropdown.Item href="#action/3.1">Loi V Tran</NavDropdown.Item>
+        <NavDropdown.Item href="#action/3.1">{user?.firstName} {user?.surname}</NavDropdown.Item>
         <NavDropdown.Divider />
         <NavDropdown.Item onClick={handleLogout} href="#action/3.4">
           Log out

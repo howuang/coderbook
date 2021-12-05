@@ -28,6 +28,21 @@ const usersRequest = (
   } catch (error) {
     dispatch({ type: types.GET_USERS_FAILURE, payload: error });
   }
+  };
+
+const singleUsersRequest = ({ displayName }) => async (dispatch) => {
+  dispatch({ type: types.GET_SINGLE_USERS_REQUEST, payload: null });
+  try {
+    const res = await api.get(
+      `/users/${displayName}`
+    );
+    dispatch({
+      type: types.GET_SINGLE_USERS_SUCCESS,
+      payload: res.data.data,
+    });
+  } catch (error) {
+    dispatch({ type: types.GET_SINGLE_USERS_FAILURE, payload: error });
+  }
 };
 
 const friendsRequest = (
@@ -202,6 +217,7 @@ const cancelRequest = (userId) => async (dispatch) => {
 
 export const userActions = {
   usersRequest,
+  singleUsersRequest,
   friendsRequest,
   getSentRequests,
   getReceivedRequests,

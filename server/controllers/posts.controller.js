@@ -5,11 +5,19 @@ const {
   catchAsync,
   sendResponse,
 } = require("../helpers/utils.helper");
+const Comment = require("../models/Comment");
 
 const postController = {};
 
 postController.create = catchAsync(async (req, res) => {
-  const post = await Post.create({ owner: req.userId, ...req.body });
+  const { body, imageUrl } = req.body;
+  console.log(imageUrl)
+  let post
+  if(!imageUrl) {
+    post = await Post.create({ owner: req.userId, body});
+  } else {
+    post = await Post.create({ owner: req.userId, body, imageUrl});
+  }
   res.json(post);
 });
 
@@ -51,14 +59,41 @@ postController.destroy = catchAsync(async (req, res) => {
 });
 
 postController.list = catchAsync(async (req, res) => {
-  return sendResponse(
-    res,
-    200,
-    true,
-    { posts: [{ foo: "bar" }] },
-    null,
-    "Login successful"
-  );
+  let { page, limit, sortBy, ...filter } = { ...req.query };
+  //req.query = {page:1, limit: 10, title[$regex]: noddle, title[options]=i}
+
+  //filter= {title[$regex]: noddle, title[options]:i}
+  page = parseInt(page) || 1;
+  limit = parseInt(limit) || 10;
+  const totalPosts = await Post.countDocuments({ ...filter });
+    const totalPages = Math.ceil(totalPosts / limit); //Math.floor
+    const offset = limit * (page - 1);
+    // limit =10, page = 2 => offset = 10
+    const posts = await Post.find(filter)
+      .sort({ ...sortBy, createdAt: -1 })
+      .skip(offset)
+      .limit(limit).populate("owner").populate({path:"comments", populate:"owner"})
+      // populate({path:"comments", populate:"owner"})
+  return sendResponse(res, 200, true, { posts }, null, "Received posts");
+});
+
+postController.createComment = catchAsync(async (req, res) => {
+  const { body } = req.body;
+  const { id } = req.params;
+  const userId = req.userId;
+  const comment = await Comment.create({
+    body,
+    owner: userId,
+    post: id,
+  });
+
+  const post = await Post.findById(id);
+  post.comments.push(comment._id);
+
+  await post.save();
+  await post.populate("comments");
+  await post.execPopulate();
+  return sendResponse(res, 200, true, { comment }, null, "Create comment");
 });
 
 module.exports = postController;

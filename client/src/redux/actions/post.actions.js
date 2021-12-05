@@ -2,7 +2,7 @@ import * as types from "../constants/post.constants";
 import api from "../api";
 import { toast } from "react-toastify";
 
-const createPost = (body, images) => async (dispatch) => {
+const createPost = ({body, imageUrl, userId}) => async (dispatch) => {
   dispatch({ type: types.CREATE_POST_REQUEST, payload: null });
   try {
     // For uploading file manually
@@ -17,12 +17,13 @@ const createPost = (body, images) => async (dispatch) => {
     // const res = await api.post("/posts", formData);
 
     // Upload images using cloudinary already
-    const res = await api.post("/posts", { body, images });
+    const res = await api.post("/posts", { body, imageUrl });
 
     dispatch({
       payload: res.data.data,
       type: types.CREATE_POST_SUCCESS,
     });
+    dispatch(postActions.postsRequest(1,10, null, userId, null))
     toast.success("Post created");
   } catch (error) {
     dispatch({ type: types.CREATE_POST_FAILURE, payload: error });
@@ -31,32 +32,36 @@ const createPost = (body, images) => async (dispatch) => {
 
 const postsRequest =
   (pageNum = 1, limit = 10, query = null, ownerId = null, sortBy = null) =>
-  async (dispatch) => {
-    dispatch({ type: types.POST_REQUEST, payload: null });
-    try {
-      let queryString = "";
-      if (query) {
-        queryString = `&title[$regex]=${query}&title[$options]=i`;
-      }
-      if (ownerId) {
-        queryString = `${queryString}&author=${ownerId}`;
-      }
-      let sortByString = "";
-      if (sortBy?.key) {
-        sortByString = `&sortBy[${sortBy.key}]=${sortBy.ascending}`;
-      }
-      const res = await api.get(
-        `/posts?page=${pageNum}&limit=${limit}${queryString}${sortByString}`,
-      );
-      dispatch({
-        type: types.POST_REQUEST_SUCCESS,
-        payload: res.data.data,
-      });
-    } catch (error) {
-      dispatch({ type: types.POST_REQUEST_FAILURE, payload: error });
-    }
-  };
+    async (dispatch) => {
+      dispatch({ type: types.POST_REQUEST, payload: null });
+      try {
+        let queryString = "";
+        if (query) {
+          queryString = `&title[$regex]=${query}&title[$options]=i`;
+        }
 
+        if (ownerId) {
+          console.log("owner id", ownerId);
+          queryString = `${queryString}&owner=${ownerId}`;
+        }
+
+        let sortByString = "";
+        if (sortBy?.key) {
+          sortByString = `&sortBy[${sortBy.key}]=${sortBy.ascending}`;
+        }
+        const res = await api.get(
+          `/posts?page=${pageNum}&limit=${limit}${queryString}${sortByString}`,
+        );
+
+        dispatch({
+          type: types.POST_REQUEST_SUCCESS,
+          payload: res.data.data.posts,
+        });
+      } catch (error) {
+        dispatch({ type: types.POST_REQUEST_FAILURE, payload: error });
+      }
+    };
+  
 const getSinglePost = (postId) => async (dispatch) => {
   dispatch({ type: types.GET_SINGLE_POST_REQUEST, payload: null });
   try {
@@ -103,7 +108,7 @@ const deletePost = (postId) => async (dispatch) => {
   }
 };
 
-const createComment = (postId, body) => async (dispatch) => {
+const createComment = (postId, body, userId) => async (dispatch) => {
   try {
     const res = await api.post(`/posts/${postId}/comments`, {
       body,
@@ -112,6 +117,7 @@ const createComment = (postId, body) => async (dispatch) => {
       type: types.CREATE_COMMENT_SUCCESS,
       payload: res.data.data,
     });
+    dispatch(postActions.postsRequest(1,10, null, userId, null))
   } catch (error) {}
 };
 

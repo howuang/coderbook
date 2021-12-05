@@ -18,11 +18,11 @@ const loginRequest = (email, password) => async (dispatch) => {
   }
 };
 
-const loginFacebookRequest = (access_token) => async (dispatch) => {
+const loginFacebookRequest = (userId, access_token) => async (dispatch) => {
   dispatch({ type: types.LOGIN_FACEBOOK_REQUEST, payload: null });
   try {
-    const res = await api.post("/auth/login/facebook", { access_token });
-    const name = res.data.data.user.name;
+    const res = await api.post("/auth/login/facebook", { userId, access_token });
+    const name = res.data.data.user.firstName;
     toast.success(`Welcome ${name}`);
     dispatch({ type: types.LOGIN_FACEBOOK_SUCCESS, payload: res.data.data });
     api.defaults.headers.common["authorization"] =
@@ -32,11 +32,11 @@ const loginFacebookRequest = (access_token) => async (dispatch) => {
   }
 };
 
-const loginGoogleRequest = (access_token) => async (dispatch) => {
+const loginGoogleRequest = (idToken) => async (dispatch) => {
   dispatch({ type: types.LOGIN_GOOGLE_REQUEST, payload: null });
   try {
-    const res = await api.post("/auth/login/google", { access_token });
-    const name = res.data.data.user.name;
+    const res = await api.post("/auth/login/google", { idToken });
+    const name = res.data.data.user.firstName;
     toast.success(`Welcome ${name}`);
     dispatch({ type: types.LOGIN_GOOGLE_SUCCESS, payload: res.data.data });
     api.defaults.headers.common["authorization"] =
@@ -81,11 +81,14 @@ const updateProfile = (name, avatarUrl) => async (dispatch) => {
   }
 };
 
-const getCurrentUser = () => async (dispatch) => {
+const getCurrentUser = (accessToken) => async (dispatch) => {
   dispatch({ type: types.GET_CURRENT_USER_REQUEST, payload: null });
+  if (accessToken) {
+    const bearerToken = "Bearer " + accessToken;
+    api.defaults.headers.common["authorization"] = bearerToken;
+  }
   try {
     const res = await api.get("/users/me");
-    console.log("current user", res.data.data)
     dispatch({ type: types.GET_CURRENT_USER_SUCCESS, payload: res.data.data });
   } catch (error) {
     dispatch({ type: types.GET_CURRENT_USER_FAILURE, payload: error });

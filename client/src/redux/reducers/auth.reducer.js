@@ -20,7 +20,6 @@ const authReducer = (state = initialState, action) => {
     case types.UPDATE_PROFILE_REQUEST:
     case types.GET_CURRENT_USER_REQUEST:
       return { ...state, loading: true };
-
     case types.REGISTER_SUCCESS:
       return {
         ...state,
@@ -39,7 +38,6 @@ const authReducer = (state = initialState, action) => {
         isAuthenticated: true,
         accessToken: payload.accessToken,
       };
-
     case types.LOGIN_FAILURE:
     case types.LOGIN_GOOGLE_FAILURE:
     case types.VERIFY_EMAIL_FAILURE:

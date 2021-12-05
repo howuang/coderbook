@@ -3,7 +3,6 @@ const router = express.Router();
 const passport = require('passport');
 
 const userController = require('../controllers/users.controller');
-const { getCurrentUser } = require('../controllers/users.controller');
 const authMiddleware = require('../middlewares/authentication');
 
 router.get(
@@ -17,9 +16,10 @@ router.get(
     userController.createWithGoogle      
 );
 
-router.post("/", userController.create);       
-router.get("/:id", userController.read);
-router.get("/me", authMiddleware.loginRequired, userController.getCurrentUser)    
+
+router.post("/", userController.create);
+router.get("/me", authMiddleware.loginRequired, userController.getCurrentUser)      
+router.get("/:displayName", userController.readUser); 
 router.put("/:id", userController.update);
 router.delete("/:id", userController.destroy);
         

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Col,
   Form,
@@ -13,6 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./style.css";
 
 import avatar from "../../assets/avatar.png";
+import { commentActions, postActions } from "../../redux/actions";
 
 const COMMENTS = [
   {
@@ -47,14 +49,32 @@ const COMMENTS = [
   },
 ];
 
-const Avatar = (props) => {
-  return <img alt="profile" className="rounded-circle" src={avatar} />;
+const Avatar = ( user ) => {
+  return <img alt="profile" className="rounded-circle" src={user.url} />;
 };
 
 /* STEP 4 */
-const CommentForm = () => {
+const CommentForm = (props) => {
+  const [comment, setComment] = useState("");
+
+  const dispatch = useDispatch();
+
+  const user = useSelector(state => state.auth.user)
+  const otherUser = useSelector(state => state.user.otherUser)
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if(props.type ==="user" && user.displayName===otherUser?.displayName){
+      dispatch(postActions.createComment(props.postId, comment, user._id));
+    } else if( props.type ==="user" && user.displayName!==otherUser?.displayName){
+      dispatch(postActions.createComment(props.postId, comment, otherUser?._id));
+    } else if (props.type === "home"){
+      dispatch(postActions.createComment(props.postId, comment, null));
+    }
+};
+
   return (
-    <Form>
+    <Form onSubmit={handleSubmit}>
       <Form.Row>
         <Col className="d-flex">
           <Form.Control
@@ -62,6 +82,7 @@ const CommentForm = () => {
             type="text"
             placeholder="Write a comment..."
             className="border-0 rounded-md bg-light"
+            onChange={(e) => setComment(e.target.value)}
           />
         </Col>
       </Form.Row>
@@ -69,14 +90,40 @@ const CommentForm = () => {
   );
 };
 
-const Comment = ({ body, user }) => {
+const Comment = ({ body, owner }) => {
+  const user = useSelector(state => state.auth.user);
+  const [edit, setEdit] = useState(body);
+  const [show, setShow] = useState(false)
+  const openEdit =()=>{
+    setShow(!show)
+  }
+  const dispatch = useDispatch();
+
+  const handleKeyDown =(e)=>{
+    if(e.which===13){
+      console.log(edit)
+      dispatch(commentActions.updateComment(edit))
+    }
+  }
   return (
     <ListGroupItem className="justify-content-start border-bottom-0 pr-0 py-0">
-      <Avatar url={user.avatarUrl} />
-      <div className="col">
+      <Avatar url={owner.avatarUrl}/>
+      <div className="col comment-bubble-wrap">
         <div className="comment-bubble">
-          <div className="font-weight-bold">{user.name}</div>
+          <div className="font-weight-bold">{owner.firstName}</div>
           <p>{body}</p>
+          {
+            user.displayName === owner.displayName ? (
+            <div className="edit-icon" >
+                <FontAwesomeIcon icon="edit" size="sm" onClick={openEdit} />
+                <p>edit</p>
+              <FontAwesomeIcon icon="times" size="sm" />
+            </div>
+            ) : null
+          }
+          <div className={show ? "edit-form show" : "edit-form"}>
+            <input value={edit} onChange={(e)=>setEdit(e.target.value)} onKeyDown={handleKeyDown}/>
+          </div>
         </div>
       </div>
     </ListGroupItem>
@@ -126,40 +173,45 @@ const PostActions = () => {
   );
 };
 
-const PostReactions = () => {
+const PostReactions = (props) => {
+  console.log(props.comments)
   return (
     <div className="d-flex justify-content-between my-2 mx-3">
       <p className="mb-0">Vinh Nguyen, Bitna Kim and 21 others</p>
-      <p className="mb-0">20 comments</p>
+      {props.comments.length === 0 ? <p className="mb-0">no comment</p> :
+      <p className="mb-0">{props?.comments.length} comments</p>}
     </div>
   );
 };
 
-function PostHeader() {
+function PostHeader({ userWhoCreatedPost }) {
   return (
     <div className="d-flex align-items-center p-3">
-      <Avatar url="https://scontent.fsgn5-6.fna.fbcdn.net/v/t1.0-1/p480x480/13924881_10105599279810183_392497317459780337_n.jpg?_nc_cat=109&ccb=3&_nc_sid=7206a8&_nc_ohc=uI6aGTdf9vEAX8-Aev9&_nc_ht=scontent.fsgn5-6.fna&tp=6&oh=e8b18753cb8aa63937829afe3aa916a7&oe=6064C685" />
+      <Avatar url={userWhoCreatedPost.avatarUrl}/>
       <h3 className="font-weight-bold ml-3">
-        Charles Lee
+        {userWhoCreatedPost.firstName}
       </h3>
+      <button >edit</button>
     </div>
   );
 }
 
-export default function Post() {
+export default function Post(props) {
   return (
-    <Card className="p-3 mb-3 shadow rounded-md">
-      <PostHeader/>
+    <Card className="p-3 mb-3 shadow rounded-md" style={{minWidth: "625px"}}>
+      <PostHeader userWhoCreatedPost={props.owner} />
+      <strong>{props.body}</strong>
+      <br></br>
       <Card.Img
         variant="top"
-        src="https://images.unsplash.com/photo-1529231812519-f0dcfdf0445f?ixid=MXwxMjA3fDB8MHxzZWFyY2h8Mnx8dGFsZW50ZWR8ZW58MHx8MHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+        src={`${props.imageUrl}`}
       />
-      <PostReactions />
+      <PostReactions comments={props.comments}/>
       <hr className="my-1" />
       <PostActions />
       <hr className="mt-1" />
-      <PostComments comments={COMMENTS} />
-      <CommentForm />
+      <PostComments comments={props.comments} />
+      <CommentForm postId={props._id} type={props.type}/>
     </Card>
   );
 }

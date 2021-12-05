@@ -3,8 +3,8 @@ const Schema = mongoose.Schema;
 
 const commentSchema = Schema(
   {
+    reactions: { type: Array },
     body: { type: String, unique: false, default: "" },
-    reactions: [{ type: Schema.Types.ObjectId, ref: "Reaction" }],
     post: { ref: "Post", required: true, type: Schema.Types.ObjectId },
     owner: {
       ref: "User",
@@ -14,7 +14,7 @@ const commentSchema = Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 const Comment = mongoose.model("Comment", commentSchema);
